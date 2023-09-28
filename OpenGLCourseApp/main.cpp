@@ -15,7 +15,7 @@
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
 
-GLuint VAO, VBO, shader, uniformModel;
+GLuint VAO, VBO, IBO, shader, uniformModel, uniformProjection;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -33,27 +33,40 @@ float minSize = 0.1f;
 static const char* vShader = "										\n\
 #version 330														\n\
 layout (location = 0) in vec3 pos;									\n\
-																	\n\
+out vec4 vColor;													\n\
 uniform mat4 model;													\n\
+uniform mat4 projection;											\n\
 																	\n\
 void main()															\n\
 {																	\n\
-	gl_Position = model * vec4(pos, 1.0);							\n\
+	gl_Position = projection * model * vec4(pos, 1.0);							\n\
+	vColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);					\n\
 }";
 
 static const char* fShader = "										\n\
 #version 330														\n\
+																	\n\
+in vec4 vColor;														\n\
 out vec4 color;														\n\
+																	\n\
 																	\n\
 void main()															\n\
 {																	\n\
-	color = vec4(1.0, 0.5, 0.5, 1.0);								\n\
+	color = vColor;													\n\
 }";
 
 void createTriangle()
 {
+	unsigned int indices[] = {
+		0, 3, 1,
+		1, 3, 2,
+		2, 3, 0,
+		0, 1, 2
+	};
+
 	GLfloat vertices[] = {
 		-1.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 1.0f,
 		1.0f, -1.0f, 0.0f,
 		0.0f, 1.0f, 0.0f
 	};
@@ -61,16 +74,23 @@ void createTriangle()
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-			glEnableVertexAttribArray(0);
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+	//MUST BE AFTER UNBINDING VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void addShader(GLuint programId, const char* shaderCode, GLenum shaderType)
@@ -128,7 +148,7 @@ void compileShaders()
 	}
 
 	uniformModel = glGetUniformLocation(shader, "model");
-
+	uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main() 
@@ -175,6 +195,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
 	try
@@ -188,6 +210,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 	
+	glm::mat4 projection = glm::perspective(45.0f, static_cast<GLfloat>(bufferWidth) / static_cast<GLfloat>(bufferHeight), 0.1f, 100.0f);
+
 
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -229,22 +253,28 @@ int main()
 		}
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearDepth(1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0f);
-		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(curAngle), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(curSize, curSize, 1.0f));
+
+		model = glm::translate(model, glm::vec3(triOffset, 0.0f, -2.5f));
+		// model = glm::rotate(model, glm::radians(curAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 
 		glBindVertexArray(VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements( GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
 		glBindVertexArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 		glUseProgram(0);
 
