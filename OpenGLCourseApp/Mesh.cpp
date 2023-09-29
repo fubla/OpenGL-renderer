@@ -3,7 +3,7 @@
 Mesh::Mesh() : VAO(0), VBO(0), IBO(0), indexCount(0)
 {}
 
-void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, GLsizei numOfVertices, GLsizei numOfIndices)
+void Mesh::CreateMesh(const GLfloat* vertices, const unsigned int* indices, const GLsizei numOfVertices, const GLsizei numOfIndices)
 {
 	indexCount = numOfIndices;
 
@@ -29,7 +29,7 @@ void Mesh::CreateMesh(GLfloat* vertices, unsigned int* indices, GLsizei numOfVer
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void Mesh::RenderMesh()
+void Mesh::RenderMesh() const
 {
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);

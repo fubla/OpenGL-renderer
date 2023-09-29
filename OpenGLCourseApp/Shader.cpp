@@ -10,8 +10,8 @@ void Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
 
 void Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation)
 {
-	std::string vertexString = ReadFile(vertexLocation);
-	std::string fragmentString = ReadFile(fragmentLocation);
+	const std::string vertexString = ReadFile(vertexLocation);
+	const std::string fragmentString = ReadFile(fragmentLocation);
 
 	const char *vertexCode = vertexString.c_str();
 	const char *fragmentCode = fragmentString.c_str();
@@ -29,7 +29,7 @@ std::string Shader::ReadFile(const char* fileLocation)
 		throw std::runtime_error("Failed to read " + std::string(fileLocation) + "!");
 	}
 
-	std::string line = "";
+	std::string line;
 	while(!fileStream.eof())
 	{
 		std::getline(fileStream, line);
@@ -75,17 +75,17 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 	uniformProjection = glGetUniformLocation(shaderProgramId, "projection");
 }
 
-GLuint Shader::GetProjectionLocation()
+GLuint Shader::GetProjectionLocation() const
 {
 	return uniformProjection;
 }
 
-GLuint Shader::GetModelLocation()
+GLuint Shader::GetModelLocation() const
 {
 	return uniformModel;
 }
 
-void Shader::UseShader()
+void Shader::UseShader() const
 {
 	glUseProgram(shaderProgramId);
 }
@@ -103,12 +103,12 @@ void Shader::ClearShader()
 	uniformProjection = 0;
 }
 
-void Shader::AddShader(GLuint programId, const char* shaderCode, GLenum shaderType)
+void Shader::AddShader(const GLuint programId, const char* shaderCode, const GLenum shaderType)
 {
-	GLuint shaderId = glCreateShader(shaderType);
+	const GLuint shaderId = glCreateShader(shaderType);
 	const GLchar *code = shaderCode;
 
-	GLint codeLength = strlen(shaderCode);
+	const GLint codeLength = strlen(shaderCode);
 
 	glShaderSource(shaderId, 1, &code, &codeLength);
 	glCompileShader(shaderId);
