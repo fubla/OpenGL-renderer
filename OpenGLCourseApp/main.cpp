@@ -17,6 +17,7 @@
 #include "Shader.h"
 #include "Window.h"
 #include "Camera.h"
+#include "Light.h"
 #include "Texture.h"
 
 Window mainWindow;
@@ -25,6 +26,8 @@ std::vector<Shader> shaderList;
 Camera camera;
 
 Texture brickTexture, dirtTexture;
+
+Light mainLight;
 
 GLfloat deltaTime = 0.0f;
 GLfloat lastTime = 0.0f;
@@ -86,7 +89,10 @@ int main()
 		printf("ERROR: %s\n", e.what());
 		return EXIT_FAILURE;
 	}
-	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
+
+	mainLight = Light(1.0f, 1.0f, 1.0f, 0.2f);
+
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformAmbientIntensity = 0, uniformAmbientColor = 0;
 	glm::mat4 projection = glm::perspective(45.0f, static_cast<GLfloat>(mainWindow.getBufferWidth()) / static_cast<GLfloat>(mainWindow.getBufferHeight()), 0.1f, 100.0f);
 
 	while (!mainWindow.getShouldClose())
@@ -108,6 +114,10 @@ int main()
 		uniformModel = shaderList[0].GetModelLocation();
 		uniformProjection = shaderList[0].GetProjectionLocation();
 		uniformView = shaderList[0].GetViewLocation();
+		uniformAmbientIntensity = shaderList[0].GetAmbientIntensityLocation();
+		uniformAmbientColor = shaderList[0].GetAmbientColorLocation();
+
+		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColor);
 
 		glm::mat4 model(1.0f);
 
