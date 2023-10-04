@@ -22,6 +22,9 @@
 #include "SpotLight.h"
 #include "Material.h"
 #include "Texture.h"
+#include "Model.h"
+
+#include <assimp/Importer.hpp>
 
 Window mainWindow;
 std::vector<Mesh*> meshList;
@@ -32,6 +35,8 @@ Texture brickTexture, dirtTexture, plainTexture;
 
 Material shinyMaterial;
 Material dullMaterial;
+
+Model laptop;
 
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
@@ -97,7 +102,7 @@ void CreateObjects()
 
 	 GLfloat vertices[] = {
 		// x     y      z        u     v		 nx    ny    nz
-		-1.0f, -1.0f, -0.6f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, -0.6f,	0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
 		0.0f, -1.0f, 1.0f,		0.5f, 0.0f,		0.0f, 0.0f, 0.0f,
 		1.0f, -1.0f, -0.6f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,		0.5f, 1.0f,		0.0f, 0.0f, 0.0f,
@@ -151,14 +156,17 @@ int main()
 		camera = Camera(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.3f);
 
 		brickTexture = Texture("Textures/brick.png");
-		brickTexture.LoadTexture();
+		brickTexture.LoadTextureA();
 		dirtTexture = Texture("Textures/dirt.png");
-		dirtTexture.LoadTexture();
+		dirtTexture.LoadTextureA();
 		plainTexture = Texture("Textures/plain.png");
-		plainTexture.LoadTexture();
+		plainTexture.LoadTextureA();
 
 		shinyMaterial = Material(4.0f, 256);
 		dullMaterial = Material(0.3f, 4);
+
+		laptop = Model();
+		laptop.LoadModel("Models/Lowpoly_Notebook_2.obj");
 	}
 	catch (const std::runtime_error &e)
 	{
@@ -167,7 +175,7 @@ int main()
 	}
 
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
-							0.1f, 0.1f,
+							0.2f, 0.4f,
 								0.0f, 0.0f, -1.0f);
 
 	unsigned int pointLightCount = 0;
@@ -186,18 +194,18 @@ int main()
 	unsigned int spotLightCount = 0;
 
 	spotLights[0] = SpotLight(1.0f, 1.0f, 1.0f,
-								0.1f, 2.0f, 
+								0.1f, 1.0f, 
 								0.0f, 0.0f, 0.0f,
 								0.0f, -1.0f, 0.0f,
-								1.0f, 0.0f, 0.0f,
+								1.0f, 0.01f, 0.001f,
 								20.0f);
 	spotLightCount++;
 
 	spotLights[1] = SpotLight(1.0f, 1.0f, 1.0f,
-								0.0f, 1.0f, 
+								0.0f, 2.0f, 
 								0.0f, -1.5f, 0.0f,
 								-100.0f, -1.0f, 0.0f,
-								1.0f, 0.0f, 0.0f,
+								1.0f, 0.01f, 0.001f,
 								20.0f);
 	spotLightCount++;
 
@@ -231,7 +239,7 @@ int main()
 		glm::vec3 flashLightPosition = camera.getCameraPosition();
 		flashLightPosition.y -= 0.3f;
 
-		spotLights[0].SetFlash(flashLightPosition, camera.getCameraDirection());
+		// spotLights[0].SetFlash(flashLightPosition, camera.getCameraDirection());
 
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
@@ -250,7 +258,7 @@ int main()
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.0f, -2.5f));
+		model = translate(model, glm::vec3(0.0f, 4.0f, -2.5f));
 		// model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		dirtTexture.UseTexture();
@@ -258,12 +266,19 @@ int main()
 		meshList[1]->RenderMesh();
 
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
+		model = translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
 		// model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		dirtTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
+
+		model = glm::mat4(1.0f);
+		model = translate(model, glm::vec3(4.0f, -1.7f, 0.0f));
+		// model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		laptop.RenderModel();
 
 		glUseProgram(0);
 
