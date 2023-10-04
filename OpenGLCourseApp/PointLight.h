@@ -9,10 +9,10 @@ public:
 				GLfloat aIntensity, GLfloat dIntensity,
 				GLfloat xPos, GLfloat yPos, GLfloat zPos,
 				GLfloat con, GLfloat lin, GLfloat exp);
-	void UseLight(GLint ambientIntensityLocation, GLint ambientColorLocation,
-			GLint diffuseIntensityLocation, GLint positionLocation,
-			GLint constantLocation, GLint linearLocation, GLint exponentLocation);
-private:
+	void UseLight(GLuint ambientIntensityLocation, GLuint ambientColorLocation,
+			GLuint diffuseIntensityLocation, GLuint positionLocation,
+			GLuint constantLocation, GLuint linearLocation, GLuint exponentLocation) const;
+protected:
     glm::vec3 position;
 
 	GLfloat constant, linear, exponent;

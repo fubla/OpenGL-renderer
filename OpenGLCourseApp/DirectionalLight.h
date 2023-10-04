@@ -8,8 +8,8 @@ public:
 	DirectionalLight(GLfloat red, GLfloat green, GLfloat blue, GLfloat aIntensity, 
 		GLfloat dIntensity, GLfloat xDir, GLfloat yDir, GLfloat zDir);
 
-	void UseLight(GLint ambientIntensityLocation, GLint colorLocation,
-					GLint diffuseIntensityLocation, GLint directionLocation) const;
+	void UseLight(GLuint ambientIntensityLocation, GLuint colorLocation,
+					GLuint diffuseIntensityLocation, GLuint directionLocation) const;
 private:
 	glm::vec3 direction;
 };
