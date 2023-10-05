@@ -1,5 +1,7 @@
 ﻿#include "Shader.h"
 
+#include <glm/gtc/type_ptr.inl>
+
 
 Shader::Shader() :
 	shaderProgramId(0),
@@ -148,7 +150,9 @@ void Shader::CompileShader(const char* vertexCode, const char* fragmentCode)
 		uniformSpotLight[i].uniformEdge = glGetUniformLocation(shaderProgramId, locBuf);
 	}
 
-
+	uniformTexture = glGetUniformLocation(shaderProgramId, "textureSampler");
+	uniformDirectionalLightTransform = glGetUniformLocation(shaderProgramId, "directionalLightTransform");
+	uniformDirectionalShadowMap = glGetUniformLocation(shaderProgramId, "directionalShadowMap");
 }
 
 GLuint Shader::GetProjectionLocation() const
@@ -241,6 +245,21 @@ void Shader::SetSpotLights(SpotLight* sLight, GLuint lightCount)
 			uniformSpotLight[i].uniformConstant, uniformSpotLight[i].uniformLinear, uniformSpotLight[i].uniformExponent,
 			uniformSpotLight[i].uniformEdge);
 	}
+}
+
+void Shader::SetTexture(GLuint textureUnit)
+{
+	glUniform1i(uniformTexture, textureUnit);
+}
+
+void Shader::SetDirectionalShadowMap(GLuint textureUnit)
+{
+	glUniform1i(uniformDirectionalShadowMap, textureUnit);
+}
+
+void Shader::SetDirectionalLightTransform(glm::mat4* lTransform)
+{
+	glUniformMatrix4fv(uniformDirectionalLightTransform, 1, GL_FALSE, glm::value_ptr(*lTransform));
 }
 
 void Shader::UseShader() const

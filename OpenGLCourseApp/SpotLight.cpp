@@ -1,8 +1,6 @@
 #include "SpotLight.h"
 
-#include <corecrt_math.h>
 #include <glm/trigonometric.hpp>
-#include <glm/detail/func_geometric.inl>
 
 SpotLight::SpotLight() : PointLight(),
                          direction(glm::vec3(0.0f, -1.0f, 0.0f)),
