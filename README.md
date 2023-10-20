@@ -2,7 +2,7 @@
 Real-time rendering engine using OpenGL
 
 ## Description
-Real-time 3D rendering engine using OpenGL.
+WIP Real-time 3D rendering engine using OpenGL written in C++.
 
 ###  Features
 Current features:
